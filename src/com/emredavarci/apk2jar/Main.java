@@ -17,67 +17,81 @@ public class Main {
 	public static void main(String[] args) {
 		
 		String root = "C:/Users/user/Documents/Tez/Apk2Jar/";
-		String dataset = "C:/Users/user/Documents/Tez/Apk2Jar/Dataset/";
-		String unzip = "C:/Users/user/Documents/Tez/Apk2Jar/unzip/";
-			
-		String d2j = "C:/Users/user/Documents/Tez/Apk2Jar/Dataset/decomp/d2j.bat";		
-		String javaSource = "javaSource.txt";
+		String dataset = root + "Dataset/";
+		String unzip = root + "unzip/";
+		String apktooldecompile = root + "apktooldecompile/";	
+		
+		String d2j = dataset + "d2j/d2j.bat";	
+		String apktool = dataset + "apktool/apktool.bat";	
+		String androidManifest = apktooldecompile + "AndroidManifest.xml";
+		
+		String javaSourceFile = unzip + "javaSourceFile.txt";
+				
+		// Get shell
+		ExecuteCommand cmd = new ExecuteCommand();
 		
 		// Get next apk name at "Dataset" folder
 		String apkName = "apper"; // bunu alýrken uzantýsýný silmeyi unutma
 		
-		// Convert apk to jar and save it to "root" folder
-		ExecuteCommand cmd = new ExecuteCommand();		
-		String output = cmd.executeCommand(d2j + " " + dataset + apkName + ".apk");		
-		//System.out.println(output);
+		// Extract AndroidManifest.xml and save it to "manifest" folder
+		cmd.executeCommand(apktool + " d" + " " + dataset + apkName + ".apk" + " -o " + apktooldecompile);	
 		
-		// Unzip jar to "unzip" folder
-		String zipFilePath = root + apkName + "-dex2jar.jar";
-        String destDirectory = unzip;
-
-        try {
-            Utils.unzip(zipFilePath, destDirectory);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+		// Read AndroidManifest.xml and search permissions
 		
-        int counter = 0;
-        
-        // Find all .class files in "unzip" directory
-        // Decompile them
-		        
-        File file = new File(unzip);
-        List<String> classFilesList = new ArrayList<String>();
-        Utils.getClassFiles(file, classFilesList);
-        
-//        for (String string : classFilesList) {
-//        	System.out.println(string);
-//		}
+		
+		
+//		// Convert apk to jar and save it to "root" folder				
+//		cmd.executeCommand(d2j + " " + dataset + apkName + ".apk");		
+//		
+//		
+//		// Unzip jar to "unzip" folder
+//		String zipFilePath = root + apkName + "-dex2jar.jar";
+//        String destDirectory = unzip;
+//
+//        try {
+//            Utils.unzip(zipFilePath, destDirectory);
+//        } catch (Exception ex) {
+//            ex.printStackTrace();
+//        }
+//		        
+//        // Find all .class files in "unzip" directory and decompile them		        
+//        File file = new File(unzip);
+//        List<String> classFilesList = new ArrayList<String>();
+//        Utils.getClassFiles(file, classFilesList);
+//        
+//        // Extract java source code from all .class files and put it in "unzip" folder
+//        extractJavaCode(unzip, javaSourceFile, classFilesList);
+//		
+//        // Get "javaSourceFile" and search all strings in it
         
         System.out.println("Done");
-        
-//		try {
-//		    final FileOutputStream stream = new FileOutputStream(unzip + javaSource);
-//
-//		    try {
-//		        final OutputStreamWriter writer = new OutputStreamWriter(stream);
-//
-//		        try {
-//		        	Decompiler.decompile("C:/Users/user/Documents/Tez/Apk2Jar/result/android/app/OnActivityPausedListener.class", new PlainTextOutput(writer), DecompilerSettings.javaDefaults());
-//		        }
-//		        finally {
-//		            writer.close();
-//		        }
-//		    }
-//		    finally {
-//		        stream.close();
-//		    }
-//		}
-//		catch (final IOException e) {
-//		    // handle error
-//		}
-
+ 
+	}
 	
+	private static void extractJavaCode(String unzip, String javaSourceFile, List<String> classFilesList){
+	       
+		try {
+		    final FileOutputStream stream = new FileOutputStream(javaSourceFile);
+
+		    try {
+		        final OutputStreamWriter writer = new OutputStreamWriter(stream);
+
+		        try {
+		        	for (String path : classFilesList) {
+		        		Decompiler.decompile(path, new PlainTextOutput(writer), DecompilerSettings.javaDefaults());
+					}
+		        }
+		        finally {
+		            writer.close();
+		        }
+		    }
+		    finally {
+		        stream.close();
+		    }
+		}
+		catch (final IOException e) {
+		    // handle error
+		}
 	}
 	
 }
